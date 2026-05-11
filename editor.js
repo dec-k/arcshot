@@ -105,7 +105,30 @@ async function renderToBlob() {
     drawCover(ctx, bgImageEl, 0, 0, canvas.width, canvas.height);
   }
 
-  ctx.drawImage(img, PADDING_PX, PADDING_PX);
+  const x = PADDING_PX;
+  const y = PADDING_PX;
+  const w = img.naturalWidth;
+  const h = img.naturalHeight;
+  const radius = 6;
+  const spread = -12;
+
+  ctx.save();
+  ctx.shadowColor = "rgba(0, 0, 0, 0.55)";
+  ctx.shadowBlur = 50;
+  ctx.shadowOffsetX = 0;
+  ctx.shadowOffsetY = 25;
+  ctx.fillStyle = "#000";
+  ctx.beginPath();
+  ctx.roundRect(x - spread, y - spread, w + spread * 2, h + spread * 2, Math.max(0, radius + spread));
+  ctx.fill();
+  ctx.restore();
+
+  ctx.save();
+  ctx.beginPath();
+  ctx.roundRect(x, y, w, h, radius);
+  ctx.clip();
+  ctx.drawImage(img, x, y);
+  ctx.restore();
 
   return new Promise((resolve) => canvas.toBlob(resolve, "image/png"));
 }
