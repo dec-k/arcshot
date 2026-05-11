@@ -1,0 +1,25 @@
+{
+  "manifest_version": 3,
+  "name": "Screenshot Padder",
+  "version": "0.1.0",
+  "description": "Capture the browser viewport and frame it against a padded, colour-customisable background.",
+  "permissions": ["activeTab", "storage"],
+  "background": {
+    "scripts": ["background.js"]
+  },
+  "action": {
+    "default_title": "Take padded screenshot",
+    "default_icon": {
+      "48": "icons/icon.svg"
+    }
+  },
+  "icons": {
+    "48": "icons/icon.svg"
+  },
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "screenshot-padder@local",
+      "strict_min_version": "115.0"
+    }
+  }
+}
