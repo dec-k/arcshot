@@ -3,7 +3,7 @@
   "name": "Screenshot Padder",
   "version": "0.1.0",
   "description": "Capture the browser viewport and frame it against a padded, colour-customisable background.",
-  "permissions": ["activeTab", "storage"],
+  "permissions": ["activeTab", "storage", "clipboardWrite"],
   "background": {
     "scripts": ["background.js"]
   },

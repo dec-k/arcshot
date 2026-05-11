@@ -11,7 +11,11 @@
       <span>Background</span>
       <input type="color" id="bg-color" value="#1e293b">
     </label>
-    <button id="download" type="button">Download PNG</button>
+    <input type="file" id="bg-image" accept="image/*" hidden>
+    <button id="image-btn" type="button">Choose image…</button>
+    <button id="clear-image" type="button" hidden>Clear image</button>
+    <button id="copy" type="button">Copy</button>
+    <button id="download" type="button" class="primary">Download PNG</button>
   </header>
 
   <main class="stage" id="stage">

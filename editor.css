@@ -44,18 +44,28 @@ html, body {
   cursor: pointer;
 }
 
-#download {
-  margin-left: auto;
-  background: #2563eb;
-  color: #fff;
-  border: none;
-  padding: 0.55rem 1.1rem;
+.toolbar button {
+  background: #1f2937;
+  color: #e2e8f0;
+  border: 1px solid #334155;
+  padding: 0.5rem 0.95rem;
   border-radius: 6px;
   font-weight: 500;
   cursor: pointer;
 }
 
-#download:hover { background: #1d4ed8; }
+.toolbar button:hover:not(:disabled) { background: #334155; }
+.toolbar button:disabled { opacity: 0.7; cursor: default; }
+
+#copy { margin-left: auto; }
+
+.toolbar button.primary {
+  background: #2563eb;
+  color: #fff;
+  border-color: transparent;
+}
+
+.toolbar button.primary:hover:not(:disabled) { background: #1d4ed8; }
 
 .stage {
   display: flex;
@@ -63,7 +73,10 @@ html, body {
   justify-content: center;
   padding: var(--padding);
   min-height: calc(100vh - var(--toolbar-h));
-  background: #1e293b;
+  background-color: #1e293b;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
   transition: background-color 120ms ease;
 }
 
