@@ -1,4 +1,7 @@
-const PADDING_PX = 96;
+const PADDING_PX = 128;
+const CORNER_RADIUS = 16;
+const BORDER_WIDTH = 1;
+const BORDER_COLOR = "rgba(255, 255, 255, 0.6)";
 const SETTINGS_KEY = "editorSettings";
 const api = typeof browser !== "undefined" ? browser : chrome;
 
@@ -150,25 +153,31 @@ async function renderToBlob() {
   const y = PADDING_PX;
   const w = img.naturalWidth;
   const h = img.naturalHeight;
-  const radius = 6;
-  const spread = -12;
 
   ctx.save();
-  ctx.shadowColor = "rgba(0, 0, 0, 0.55)";
-  ctx.shadowBlur = 50;
+  ctx.shadowColor = "rgba(0, 0, 0, 0.45)";
+  ctx.shadowBlur = 60;
   ctx.shadowOffsetX = 0;
-  ctx.shadowOffsetY = 25;
+  ctx.shadowOffsetY = 30;
   ctx.fillStyle = "#000";
   ctx.beginPath();
-  ctx.roundRect(x - spread, y - spread, w + spread * 2, h + spread * 2, Math.max(0, radius + spread));
+  ctx.roundRect(x, y, w, h, CORNER_RADIUS);
   ctx.fill();
   ctx.restore();
 
   ctx.save();
   ctx.beginPath();
-  ctx.roundRect(x, y, w, h, radius);
+  ctx.roundRect(x, y, w, h, CORNER_RADIUS);
   ctx.clip();
   ctx.drawImage(img, x, y);
+  ctx.restore();
+
+  ctx.save();
+  ctx.beginPath();
+  ctx.roundRect(x + BORDER_WIDTH / 2, y + BORDER_WIDTH / 2, w - BORDER_WIDTH, h - BORDER_WIDTH, CORNER_RADIUS);
+  ctx.strokeStyle = BORDER_COLOR;
+  ctx.lineWidth = BORDER_WIDTH;
+  ctx.stroke();
   ctx.restore();
 
   return new Promise((resolve) => canvas.toBlob(resolve, "image/png"));
