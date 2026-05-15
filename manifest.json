@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Screenshot Padder",
-  "version": "0.1.0",
-  "description": "Capture the browser viewport and frame it against a padded, colour-customisable background.",
+  "name": "Arcshot",
+  "version": "0.2.0",
+  "description": "A simple screenshot utility to easily beautify your captures.",
   "permissions": ["activeTab", "storage", "clipboardWrite"],
   "action": {
     "default_title": "Take padded screenshot",
