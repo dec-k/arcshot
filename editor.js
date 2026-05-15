@@ -1,8 +1,7 @@
 const PADDING_PX = 128;
 const CORNER_RADIUS = 32;
-const BORDER_WIDTH = 6;
-const BORDER_COLOR = "rgba(255, 255, 255, 0.55)";
-const BORDER_RING_COLOR = "rgba(255, 255, 255, 0.22)";
+const BORDER_WIDTH = 12;
+const BORDER_COLOR = "rgba(255, 255, 255, 0.35)";
 const SETTINGS_KEY = "editorSettings";
 const api = typeof browser !== "undefined" ? browser : chrome;
 
@@ -170,6 +169,12 @@ async function renderToBlob() {
   const w = img.naturalWidth;
   const h = img.naturalHeight;
 
+  const ox = x - BORDER_WIDTH;
+  const oy = y - BORDER_WIDTH;
+  const ow = w + BORDER_WIDTH * 2;
+  const oh = h + BORDER_WIDTH * 2;
+  const outerRadius = CORNER_RADIUS + BORDER_WIDTH;
+
   ctx.save();
   ctx.shadowColor = "rgba(0, 0, 0, 0.45)";
   ctx.shadowBlur = 60;
@@ -190,16 +195,10 @@ async function renderToBlob() {
 
   ctx.save();
   ctx.beginPath();
-  ctx.roundRect(x + BORDER_WIDTH / 2, y + BORDER_WIDTH / 2, w - BORDER_WIDTH, h - BORDER_WIDTH, CORNER_RADIUS);
-  ctx.strokeStyle = BORDER_COLOR;
-  ctx.lineWidth = BORDER_WIDTH;
-  ctx.stroke();
-
-  ctx.beginPath();
-  ctx.roundRect(x - 0.5, y - 0.5, w + 1, h + 1, CORNER_RADIUS + 1);
-  ctx.strokeStyle = BORDER_RING_COLOR;
-  ctx.lineWidth = 1;
-  ctx.stroke();
+  ctx.roundRect(ox, oy, ow, oh, outerRadius);
+  ctx.roundRect(x, y, w, h, CORNER_RADIUS);
+  ctx.fillStyle = BORDER_COLOR;
+  ctx.fill("evenodd");
   ctx.restore();
 
   return new Promise((resolve) => canvas.toBlob(resolve, "image/png"));
