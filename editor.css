@@ -1,88 +1,160 @@
-:root {
-  --padding: 96px;
-  --toolbar-h: 56px;
-}
-
 * { box-sizing: border-box; }
 
 html, body {
   margin: 0;
   font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
-  background: #0b1120;
-  color: #e2e8f0;
-  min-height: 100vh;
-}
-
-.toolbar {
-  position: sticky;
-  top: 0;
-  height: var(--toolbar-h);
-  display: flex;
-  align-items: center;
-  gap: 1.25rem;
-  padding: 0 1.25rem;
-  background: #111827;
-  border-bottom: 1px solid #1f2937;
-  z-index: 10;
-}
-
-.control {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.9rem;
-  color: #cbd5e1;
-}
-
-.control input[type="color"] {
-  width: 36px;
-  height: 28px;
-  padding: 0;
-  border: 1px solid #334155;
-  border-radius: 4px;
   background: transparent;
-  cursor: pointer;
+  color: #1f2937;
 }
 
-.toolbar button {
-  background: #1f2937;
-  color: #e2e8f0;
-  border: 1px solid #334155;
-  padding: 0.5rem 0.95rem;
-  border-radius: 6px;
+body {
+  width: 360px;
+  padding: 12px;
+}
+
+.card {
+  background: #f8fafc;
+  border-radius: 14px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.top-row {
+  display: flex;
+  gap: 8px;
+}
+
+.action {
+  flex: 1;
+  background: #ffffff;
+  color: #1f2937;
+  border: 1px solid #e2e8f0;
+  padding: 9px 12px;
+  border-radius: 8px;
+  font-size: 13px;
   font-weight: 500;
   cursor: pointer;
 }
 
-.toolbar button:hover:not(:disabled) { background: #334155; }
-.toolbar button:disabled { opacity: 0.7; cursor: default; }
+.action:hover:not(:disabled) { background: #f1f5f9; }
+.action:disabled { opacity: 0.7; cursor: default; }
 
-#copy { margin-left: auto; }
-
-.toolbar button.primary {
+.action.primary {
   background: #2563eb;
   color: #fff;
   border-color: transparent;
 }
+.action.primary:hover:not(:disabled) { background: #1d4ed8; }
 
-.toolbar button.primary:hover:not(:disabled) { background: #1d4ed8; }
-
-.stage {
+.preview {
+  position: relative;
+  border-radius: 10px;
+  padding: 18px;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: var(--padding);
-  min-height: calc(100vh - var(--toolbar-h));
-  background-color: #1e293b;
+  min-height: 140px;
+  background-color: #ff8a7a;
+  background-image: linear-gradient(135deg, #ff8a7a, #ffd27a);
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  transition: background-color 120ms ease;
+  overflow: hidden;
 }
 
 #screenshot {
   display: block;
   max-width: 100%;
-  border-radius: 6px;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.55);
+  max-height: 220px;
+  border-radius: 4px;
+  box-shadow: 0 12px 24px -8px rgba(0, 0, 0, 0.45);
+}
+
+#screenshot:not([src]) { display: none; }
+
+.bottom-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.swatch {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.4);
+  background: #ff8a7a;
+  flex: 0 0 auto;
+}
+
+.hue-slider {
+  flex: 1;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 10px;
+  border-radius: 999px;
+  background: linear-gradient(
+    to right,
+    hsl(0 90% 60%),
+    hsl(60 90% 60%),
+    hsl(120 90% 60%),
+    hsl(180 90% 60%),
+    hsl(240 90% 60%),
+    hsl(300 90% 60%),
+    hsl(360 90% 60%)
+  );
+  outline: none;
+  cursor: pointer;
+}
+
+.hue-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  border: 1px solid rgba(0,0,0,0.15);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+  cursor: pointer;
+}
+.hue-slider::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  border: 1px solid rgba(0,0,0,0.15);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+  cursor: pointer;
+}
+
+.icon-btn {
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #ffffff;
+  color: #475569;
+  border: 1px solid #e2e8f0;
+  border-radius: 50%;
+  cursor: pointer;
+  padding: 0;
+  font-size: 16px;
+  line-height: 1;
+}
+.icon-btn:hover { background: #f1f5f9; }
+
+.status {
+  font-size: 12px;
+  color: #64748b;
+  text-align: center;
+}
+
+.preview.drop-active {
+  outline: 2px dashed rgba(255, 255, 255, 0.9);
+  outline-offset: -8px;
 }
