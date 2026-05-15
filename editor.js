@@ -50,7 +50,7 @@ function applyBackground() {
     stage.style.backgroundImage = `url("${bgImageDataUrl}")`;
   } else {
     stage.style.backgroundColor = bgColor;
-    stage.style.backgroundImage = "";
+    stage.style.backgroundImage = "none";
   }
   clearImageBtn.hidden = !bgImageDataUrl;
 }
