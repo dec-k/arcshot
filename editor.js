@@ -1,7 +1,8 @@
 const PADDING_PX = 128;
-const CORNER_RADIUS = 16;
-const BORDER_WIDTH = 1;
-const BORDER_COLOR = "rgba(255, 255, 255, 0.6)";
+const CORNER_RADIUS = 32;
+const BORDER_WIDTH = 6;
+const BORDER_COLOR = "rgba(255, 255, 255, 0.55)";
+const BORDER_RING_COLOR = "rgba(255, 255, 255, 0.22)";
 const SETTINGS_KEY = "editorSettings";
 const api = typeof browser !== "undefined" ? browser : chrome;
 
@@ -46,14 +47,23 @@ async function init() {
   }
 }
 
+function gradientStops() {
+  const h = rgbToHue(bgColor);
+  return {
+    start: hslToHex((h - 18 + 360) % 360, 90, 74),
+    end: hslToHex((h + 28) % 360, 88, 58),
+  };
+}
+
 function applyBackground() {
   swatch.style.background = bgColor;
   if (bgImageDataUrl) {
     stage.style.backgroundColor = "";
     stage.style.backgroundImage = `url("${bgImageDataUrl}")`;
   } else {
+    const { start, end } = gradientStops();
     stage.style.backgroundColor = bgColor;
-    stage.style.backgroundImage = "none";
+    stage.style.backgroundImage = `linear-gradient(135deg, ${start}, ${end})`;
   }
   clearImageBtn.hidden = !bgImageDataUrl;
 }
@@ -142,11 +152,17 @@ async function renderToBlob() {
   canvas.height = img.naturalHeight + PADDING_PX * 2;
 
   const ctx = canvas.getContext("2d");
-  ctx.fillStyle = bgColor;
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-
   if (bgImageEl) {
+    ctx.fillStyle = bgColor;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
     drawCover(ctx, bgImageEl, 0, 0, canvas.width, canvas.height);
+  } else {
+    const { start, end } = gradientStops();
+    const grad = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+    grad.addColorStop(0, start);
+    grad.addColorStop(1, end);
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
   }
 
   const x = PADDING_PX;
@@ -177,6 +193,12 @@ async function renderToBlob() {
   ctx.roundRect(x + BORDER_WIDTH / 2, y + BORDER_WIDTH / 2, w - BORDER_WIDTH, h - BORDER_WIDTH, CORNER_RADIUS);
   ctx.strokeStyle = BORDER_COLOR;
   ctx.lineWidth = BORDER_WIDTH;
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.roundRect(x - 0.5, y - 0.5, w + 1, h + 1, CORNER_RADIUS + 1);
+  ctx.strokeStyle = BORDER_RING_COLOR;
+  ctx.lineWidth = 1;
   ctx.stroke();
   ctx.restore();
 

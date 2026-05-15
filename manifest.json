@@ -5,7 +5,7 @@
   "description": "A simple screenshot utility to easily beautify your captures.",
   "permissions": ["activeTab", "storage", "clipboardWrite"],
   "action": {
-    "default_title": "Take padded screenshot",
+    "default_title": "Capture with Arcshot",
     "default_popup": "editor.html",
     "default_icon": {
       "48": "icons/icon.svg"
@@ -16,7 +16,7 @@
   },
   "browser_specific_settings": {
     "gecko": {
-      "id": "screenshot-padder@local",
+      "id": "arcshot@local",
       "strict_min_version": "115.0"
     }
   }
