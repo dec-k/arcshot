@@ -179,13 +179,38 @@ body {
 }
 .icon-btn:hover { background: var(--surface-hover); }
 
+.mode-toggle {
+  display: inline-flex;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.mode-toggle[hidden] { display: none; }
+
+.mode-btn {
+  width: 26px;
+  height: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  color: var(--icon-color);
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+.mode-btn + .mode-btn { border-left: 1px solid var(--border); }
+.mode-btn:hover { background: var(--surface-hover); }
+.mode-btn.active {
+  background: var(--primary);
+  color: var(--primary-text);
+}
+
 .status {
   font-size: 12px;
   color: var(--text-muted);
   text-align: center;
-}
-
-.preview.drop-active {
-  outline: 2px dashed rgba(255, 255, 255, 0.9);
-  outline-offset: -8px;
 }

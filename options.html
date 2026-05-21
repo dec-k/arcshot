@@ -32,6 +32,24 @@
       </div>
     </section>
 
+    <section class="setting">
+      <div class="setting-label">
+        <h2>Background Image</h2>
+        <p>Specify a custom image to use as a background. When set, you'll be able to swap between Gradient and Image modes in the Capture window.</p>
+      </div>
+      <div class="setting-control">
+        <div id="bg-image-preview" class="bg-image-preview" hidden>
+          <img id="bg-image-thumb" alt="Background image preview">
+        </div>
+        <div id="bg-image-drop" class="bg-image-drop">
+          <p>Drop an image here, or</p>
+          <button type="button" id="bg-image-choose" class="btn">Choose image…</button>
+          <input type="file" id="bg-image-file" accept="image/*" hidden>
+        </div>
+        <button type="button" id="bg-image-clear" class="btn btn-secondary" hidden>Remove image</button>
+      </div>
+    </section>
+
     <div id="status" class="status" hidden></div>
   </main>
 

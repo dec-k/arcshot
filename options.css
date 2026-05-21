@@ -52,6 +52,10 @@ html, body {
   gap: 16px;
 }
 
+.setting + .setting {
+  margin-top: 16px;
+}
+
 @media (min-width: 560px) {
   .setting {
     grid-template-columns: 1fr 220px;
@@ -104,6 +108,71 @@ html, body {
   font-size: 12px;
   margin-left: 2px;
 }
+
+.bg-image-preview {
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  aspect-ratio: 16 / 9;
+  background: var(--surface-hover);
+}
+
+.bg-image-preview img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.bg-image-drop {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 18px;
+  border: 1px dashed var(--border);
+  border-radius: 8px;
+  background: var(--surface-hover);
+  text-align: center;
+}
+
+.bg-image-drop.drop-active {
+  border-color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 8%, var(--surface-hover));
+}
+
+.bg-image-drop p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.setting-control:has(.bg-image-preview:not([hidden])) .bg-image-drop {
+  display: none;
+}
+
+.btn {
+  background: var(--primary);
+  color: #fff;
+  border: 0;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.btn:hover { background: var(--primary-hover); }
+
+.btn-secondary {
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+.btn-secondary:hover { background: var(--surface-hover); }
 
 .status {
   margin-top: 16px;
