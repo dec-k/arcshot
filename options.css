@@ -37,9 +37,22 @@ html, body {
   padding: 32px 24px 48px;
 }
 
+.page-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.page-header .logo {
+  width: 36px;
+  height: 36px;
+  display: block;
+}
+
 .page-header h1 {
   font-size: 22px;
-  margin: 0 0 24px;
+  margin: 0;
 }
 
 .setting {
