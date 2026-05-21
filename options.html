@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Arcshot Settings</title>
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+  <main class="page">
+    <header class="page-header">
+      <h1>Arcshot Settings</h1>
+    </header>
+
+    <section class="setting">
+      <div class="setting-label">
+        <h2>Background size</h2>
+        <p>Controls how wide the background around your capture is.</p>
+      </div>
+      <div class="setting-control" role="radiogroup" aria-label="Background size">
+        <label class="radio">
+          <input type="radio" name="bgSize" value="thin">
+          <span>Thin</span>
+        </label>
+        <label class="radio">
+          <input type="radio" name="bgSize" value="standard">
+          <span>Standard <em>(default)</em></span>
+        </label>
+        <label class="radio">
+          <input type="radio" name="bgSize" value="large">
+          <span>Large</span>
+        </label>
+      </div>
+    </section>
+
+    <div id="status" class="status" hidden></div>
+  </main>
+
+  <script src="options.js"></script>
+</body>
+</html>

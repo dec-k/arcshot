@@ -1,8 +1,10 @@
-const PADDING_PX = 128;
+const BASE_PADDING_PX = 128;
+const BG_SIZE_SCALE = { thin: 0.5, standard: 1, large: 1.5 };
 const CORNER_RADIUS = 32;
 const BORDER_WIDTH = 12;
 const BORDER_COLOR = "rgba(255, 255, 255, 0.35)";
 const SETTINGS_KEY = "editorSettings";
+const APP_SETTINGS_KEY = "appSettings";
 const api = typeof browser !== "undefined" ? browser : chrome;
 
 const stage = document.getElementById("stage");
@@ -11,6 +13,7 @@ const swatch = document.getElementById("swatch");
 const hue = document.getElementById("hue");
 const imageBtn = document.getElementById("image-btn");
 const clearImageBtn = document.getElementById("clear-image");
+const settingsBtn = document.getElementById("settings-btn");
 const copyBtn = document.getElementById("copy");
 const downloadBtn = document.getElementById("download");
 const status = document.getElementById("status");
@@ -18,9 +21,25 @@ const status = document.getElementById("status");
 let bgColor = "#ff8a7a";
 let bgImageDataUrl = null;
 let bgImageEl = null;
+let bgSize = "standard";
+
+function paddingPx() {
+  return Math.round(BASE_PADDING_PX * (BG_SIZE_SCALE[bgSize] ?? 1));
+}
+
+function applyBgSizeToPreview() {
+  const scale = BG_SIZE_SCALE[bgSize] ?? 1;
+  stage.style.padding = `${Math.round(18 * scale)}px`;
+}
 
 async function init() {
-  const { [SETTINGS_KEY]: settings } = await api.storage.local.get([SETTINGS_KEY]);
+  const { [SETTINGS_KEY]: settings, [APP_SETTINGS_KEY]: appSettings } =
+    await api.storage.local.get([SETTINGS_KEY, APP_SETTINGS_KEY]);
+
+  if (appSettings?.bgSize && BG_SIZE_SCALE[appSettings.bgSize]) {
+    bgSize = appSettings.bgSize;
+  }
+  applyBgSizeToPreview();
 
   if (settings?.bgColor) {
     bgColor = settings.bgColor;
@@ -146,9 +165,10 @@ function drawCover(ctx, image, dx, dy, dw, dh) {
 async function renderToBlob() {
   if (!img.complete || !img.naturalWidth) return null;
 
+  const pad = paddingPx();
   const canvas = document.createElement("canvas");
-  canvas.width = img.naturalWidth + PADDING_PX * 2;
-  canvas.height = img.naturalHeight + PADDING_PX * 2;
+  canvas.width = img.naturalWidth + pad * 2;
+  canvas.height = img.naturalHeight + pad * 2;
 
   const ctx = canvas.getContext("2d");
   if (bgImageEl) {
@@ -164,8 +184,8 @@ async function renderToBlob() {
     ctx.fillRect(0, 0, canvas.width, canvas.height);
   }
 
-  const x = PADDING_PX;
-  const y = PADDING_PX;
+  const x = pad;
+  const y = pad;
   const w = img.naturalWidth;
   const h = img.naturalHeight;
 
@@ -248,6 +268,22 @@ clearImageBtn.addEventListener("click", async () => {
   bgImageEl = null;
   applyBackground();
   await saveSettings();
+});
+
+settingsBtn.addEventListener("click", () => {
+  if (api.runtime?.openOptionsPage) {
+    api.runtime.openOptionsPage();
+    window.close();
+  }
+});
+
+api.storage.onChanged.addListener((changes, area) => {
+  if (area !== "local") return;
+  const next = changes[APP_SETTINGS_KEY]?.newValue?.bgSize;
+  if (next && BG_SIZE_SCALE[next] && next !== bgSize) {
+    bgSize = next;
+    applyBgSizeToPreview();
+  }
 });
 
 // Drag-and-drop onto the preview as an inline alternative to the picker.
