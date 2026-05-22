@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Arcshot",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "A simple screenshot utility to easily beautify your captures.",
   "permissions": ["activeTab", "storage", "clipboardWrite"],
   "action": {
