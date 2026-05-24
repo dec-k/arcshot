@@ -1,16 +1,20 @@
-const PADDING_PX = 128;
+const BASE_PADDING_PX = 128;
+const BG_SIZE_SCALE = { thin: 0.5, standard: 1, large: 1.5 };
 const CORNER_RADIUS = 32;
 const BORDER_WIDTH = 12;
 const BORDER_COLOR = "rgba(255, 255, 255, 0.35)";
 const SETTINGS_KEY = "editorSettings";
+const APP_SETTINGS_KEY = "appSettings";
 const api = typeof browser !== "undefined" ? browser : chrome;
 
 const stage = document.getElementById("stage");
 const img = document.getElementById("screenshot");
 const swatch = document.getElementById("swatch");
 const hue = document.getElementById("hue");
-const imageBtn = document.getElementById("image-btn");
-const clearImageBtn = document.getElementById("clear-image");
+const modeToggle = document.getElementById("mode-toggle");
+const modeGradientBtn = document.getElementById("mode-gradient");
+const modeImageBtn = document.getElementById("mode-image");
+const settingsBtn = document.getElementById("settings-btn");
 const copyBtn = document.getElementById("copy");
 const downloadBtn = document.getElementById("download");
 const status = document.getElementById("status");
@@ -18,9 +22,30 @@ const status = document.getElementById("status");
 let bgColor = "#ff8a7a";
 let bgImageDataUrl = null;
 let bgImageEl = null;
+let bgSize = "standard";
+let bgMode = "gradient";
+
+function paddingPx() {
+  return Math.round(BASE_PADDING_PX * (BG_SIZE_SCALE[bgSize] ?? 1));
+}
+
+function applyBgSizeToPreview() {
+  const scale = BG_SIZE_SCALE[bgSize] ?? 1;
+  stage.style.padding = `${Math.round(18 * scale)}px`;
+}
+
+function effectiveMode() {
+  return bgImageDataUrl && bgMode === "image" ? "image" : "gradient";
+}
 
 async function init() {
-  const { [SETTINGS_KEY]: settings } = await api.storage.local.get([SETTINGS_KEY]);
+  const { [SETTINGS_KEY]: settings, [APP_SETTINGS_KEY]: appSettings } =
+    await api.storage.local.get([SETTINGS_KEY, APP_SETTINGS_KEY]);
+
+  if (appSettings?.bgSize && BG_SIZE_SCALE[appSettings.bgSize]) {
+    bgSize = appSettings.bgSize;
+  }
+  applyBgSizeToPreview();
 
   if (settings?.bgColor) {
     bgColor = settings.bgColor;
@@ -28,13 +53,17 @@ async function init() {
   } else {
     bgColor = hslToHex(Number(hue.value), 85, 65);
   }
-  if (settings?.bgImage) {
+  if (settings?.bgMode === "image" || settings?.bgMode === "gradient") {
+    bgMode = settings.bgMode;
+  }
+  if (appSettings?.bgImage) {
     try {
-      await setBgImage(settings.bgImage);
+      await setBgImage(appSettings.bgImage);
     } catch (err) {
       console.error("Failed to load saved background image", err);
     }
   }
+  renderModeToggle();
   applyBackground();
 
   try {
@@ -56,7 +85,7 @@ function gradientStops() {
 
 function applyBackground() {
   swatch.style.background = bgColor;
-  if (bgImageDataUrl) {
+  if (effectiveMode() === "image") {
     stage.style.backgroundColor = "";
     stage.style.backgroundImage = `url("${bgImageDataUrl}")`;
   } else {
@@ -64,7 +93,16 @@ function applyBackground() {
     stage.style.backgroundColor = bgColor;
     stage.style.backgroundImage = `linear-gradient(135deg, ${start}, ${end})`;
   }
-  clearImageBtn.hidden = !bgImageDataUrl;
+}
+
+function renderModeToggle() {
+  const hasImage = !!bgImageDataUrl;
+  modeToggle.hidden = !hasImage;
+  const active = effectiveMode();
+  modeGradientBtn.classList.toggle("active", active === "gradient");
+  modeImageBtn.classList.toggle("active", active === "image");
+  modeGradientBtn.setAttribute("aria-selected", String(active === "gradient"));
+  modeImageBtn.setAttribute("aria-selected", String(active === "image"));
 }
 
 async function setBgImage(dataUrl) {
@@ -81,18 +119,9 @@ function loadImage(src) {
   });
 }
 
-function readFileAsDataUrl(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = () => reject(reader.error);
-    reader.readAsDataURL(file);
-  });
-}
-
 async function saveSettings() {
   await api.storage.local.set({
-    [SETTINGS_KEY]: { bgColor, bgImage: bgImageDataUrl },
+    [SETTINGS_KEY]: { bgColor, bgMode },
   });
 }
 
@@ -146,12 +175,13 @@ function drawCover(ctx, image, dx, dy, dw, dh) {
 async function renderToBlob() {
   if (!img.complete || !img.naturalWidth) return null;
 
+  const pad = paddingPx();
   const canvas = document.createElement("canvas");
-  canvas.width = img.naturalWidth + PADDING_PX * 2;
-  canvas.height = img.naturalHeight + PADDING_PX * 2;
+  canvas.width = img.naturalWidth + pad * 2;
+  canvas.height = img.naturalHeight + pad * 2;
 
   const ctx = canvas.getContext("2d");
-  if (bgImageEl) {
+  if (effectiveMode() === "image" && bgImageEl) {
     ctx.fillStyle = bgColor;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     drawCover(ctx, bgImageEl, 0, 0, canvas.width, canvas.height);
@@ -164,8 +194,8 @@ async function renderToBlob() {
     ctx.fillRect(0, 0, canvas.width, canvas.height);
   }
 
-  const x = PADDING_PX;
-  const y = PADDING_PX;
+  const x = pad;
+  const y = pad;
   const w = img.naturalWidth;
   const h = img.naturalHeight;
 
@@ -226,48 +256,46 @@ hue.addEventListener("input", () => {
   saveSettings();
 });
 
-imageBtn.addEventListener("click", async () => {
-  // Native file pickers close extension popups, so open the picker in a
-  // detached extension window that survives the OS file dialog.
-  try {
-    await api.windows.create({
-      url: api.runtime.getURL("picker.html"),
-      type: "popup",
-      width: 420,
-      height: 240,
-    });
+function setMode(mode) {
+  if (mode !== "gradient" && mode !== "image") return;
+  if (mode === "image" && !bgImageDataUrl) return;
+  bgMode = mode;
+  renderModeToggle();
+  applyBackground();
+  saveSettings();
+}
+
+modeGradientBtn.addEventListener("click", () => setMode("gradient"));
+modeImageBtn.addEventListener("click", () => setMode("image"));
+
+settingsBtn.addEventListener("click", () => {
+  if (api.runtime?.openOptionsPage) {
+    api.runtime.openOptionsPage();
     window.close();
-  } catch (err) {
-    console.error("Couldn't open picker window", err);
-    showStatus("Couldn't open image picker.");
   }
 });
 
-clearImageBtn.addEventListener("click", async () => {
-  bgImageDataUrl = null;
-  bgImageEl = null;
-  applyBackground();
-  await saveSettings();
-});
-
-// Drag-and-drop onto the preview as an inline alternative to the picker.
-stage.addEventListener("dragover", (e) => {
-  e.preventDefault();
-  stage.classList.add("drop-active");
-});
-stage.addEventListener("dragleave", () => stage.classList.remove("drop-active"));
-stage.addEventListener("drop", async (e) => {
-  e.preventDefault();
-  stage.classList.remove("drop-active");
-  const file = e.dataTransfer?.files?.[0];
-  if (!file || !file.type.startsWith("image/")) return;
-  try {
-    const dataUrl = await readFileAsDataUrl(file);
-    await setBgImage(dataUrl);
+api.storage.onChanged.addListener(async (changes, area) => {
+  if (area !== "local") return;
+  const next = changes[APP_SETTINGS_KEY]?.newValue;
+  if (!next) return;
+  if (next.bgSize && BG_SIZE_SCALE[next.bgSize] && next.bgSize !== bgSize) {
+    bgSize = next.bgSize;
+    applyBgSizeToPreview();
+  }
+  if (next.bgImage !== undefined && next.bgImage !== bgImageDataUrl) {
+    if (next.bgImage) {
+      try {
+        await setBgImage(next.bgImage);
+      } catch (err) {
+        console.error("Failed to load updated background image", err);
+      }
+    } else {
+      bgImageDataUrl = null;
+      bgImageEl = null;
+    }
+    renderModeToggle();
     applyBackground();
-    await saveSettings();
-  } catch (err) {
-    console.error("Failed to set background image", err);
   }
 });
 
