@@ -5,6 +5,8 @@ const BORDER_WIDTH = 12;
 const BORDER_COLOR = "rgba(255, 255, 255, 0.35)";
 const SETTINGS_KEY = "editorSettings";
 const APP_SETTINGS_KEY = "appSettings";
+const PENDING_ACTION_KEY = "pendingAction";
+const PENDING_ACTION_TTL_MS = 3000;
 const api = typeof browser !== "undefined" ? browser : chrome;
 
 const stage = document.getElementById("stage");
@@ -72,7 +74,35 @@ async function init() {
   } catch (err) {
     console.error("Capture failed", err);
     showStatus("Couldn't capture this tab.");
+    return;
   }
+
+  await runPendingAction();
+}
+
+function waitForImage() {
+  if (img.complete && img.naturalWidth) return Promise.resolve();
+  return new Promise((resolve, reject) => {
+    img.addEventListener("load", () => resolve(), { once: true });
+    img.addEventListener("error", () => reject(new Error("Image failed to load")), { once: true });
+  });
+}
+
+async function runPendingAction() {
+  const { [PENDING_ACTION_KEY]: pending } = await api.storage.local.get([PENDING_ACTION_KEY]);
+  if (!pending) return;
+  await api.storage.local.remove(PENDING_ACTION_KEY);
+  if (typeof pending.ts !== "number" || Date.now() - pending.ts > PENDING_ACTION_TTL_MS) return;
+
+  try {
+    await waitForImage();
+  } catch (err) {
+    console.error("Pending action aborted; capture missing", err);
+    return;
+  }
+
+  if (pending.action === "copy") await performCopy({ closeAfter: true });
+  else if (pending.action === "download") await performDownload({ closeAfter: true });
 }
 
 function gradientStops() {
@@ -299,7 +329,7 @@ api.storage.onChanged.addListener(async (changes, area) => {
   }
 });
 
-copyBtn.addEventListener("click", async () => {
+async function performCopy({ closeAfter = false } = {}) {
   const blob = await renderToBlob();
   if (!blob) return;
   try {
@@ -309,9 +339,10 @@ copyBtn.addEventListener("click", async () => {
     console.error("Clipboard write failed", err);
     flashButton(copyBtn, "Copy failed");
   }
-});
+  if (closeAfter) setTimeout(() => window.close(), 300);
+}
 
-downloadBtn.addEventListener("click", async () => {
+async function performDownload({ closeAfter = false } = {}) {
   const blob = await renderToBlob();
   if (!blob) return;
   const url = URL.createObjectURL(blob);
@@ -322,6 +353,10 @@ downloadBtn.addEventListener("click", async () => {
   a.click();
   a.remove();
   URL.revokeObjectURL(url);
-});
+  if (closeAfter) setTimeout(() => window.close(), 300);
+}
+
+copyBtn.addEventListener("click", () => performCopy());
+downloadBtn.addEventListener("click", () => performDownload());
 
 init();

@@ -11,6 +11,24 @@
       "48": "icons/arcshot-logo.png"
     }
   },
+  "background": {
+    "service_worker": "background.js",
+    "scripts": ["background.js"]
+  },
+  "commands": {
+    "_execute_action": {
+      "suggested_key": {
+        "default": "Alt+Shift+S"
+      },
+      "description": "Open Arcshot"
+    },
+    "copy_screenshot": {
+      "description": "Copy screen with Arcshot"
+    },
+    "download_screenshot": {
+      "description": "Download screen with Arcshot"
+    }
+  },
   "options_ui": {
     "page": "options.html",
     "open_in_tab": true

@@ -1,6 +1,12 @@
 const APP_SETTINGS_KEY = "appSettings";
 const DEFAULTS = { bgSize: "standard", bgImage: null };
 const api = typeof browser !== "undefined" ? browser : chrome;
+const COMMAND_LABELS = {
+  _execute_action: "Open Arcshot",
+  copy_screenshot: "Copy screen with Arcshot",
+  download_screenshot: "Download screen with Arcshot",
+};
+const isFirefox = /Firefox\//.test(navigator.userAgent);
 
 const status = document.getElementById("status");
 const radios = document.querySelectorAll('input[name="bgSize"]');
@@ -10,6 +16,9 @@ const clearBtn = document.getElementById("bg-image-clear");
 const previewWrap = document.getElementById("bg-image-preview");
 const previewImg = document.getElementById("bg-image-thumb");
 const dropZone = document.getElementById("bg-image-drop");
+const shortcutList = document.getElementById("shortcut-list");
+const openShortcutsBtn = document.getElementById("open-shortcuts");
+const shortcutHint = document.getElementById("shortcut-hint");
 
 let current = { ...DEFAULTS };
 
@@ -100,4 +109,64 @@ dropZone.addEventListener("drop", (e) => {
   if (file) handleFile(file);
 });
 
+async function loadShortcuts() {
+  shortcutList.replaceChildren();
+  if (!api.commands?.getAll) {
+    const li = document.createElement("li");
+    li.className = "shortcut-row";
+    li.textContent = "Shortcuts aren't supported in this browser.";
+    shortcutList.appendChild(li);
+    openShortcutsBtn.hidden = true;
+    return;
+  }
+
+  const commands = await api.commands.getAll();
+  const ordered = Object.keys(COMMAND_LABELS)
+    .map((name) => commands.find((c) => c.name === name))
+    .filter(Boolean);
+  const rest = commands.filter((c) => !COMMAND_LABELS[c.name]);
+  for (const cmd of [...ordered, ...rest]) {
+    const row = document.createElement("li");
+    row.className = "shortcut-row";
+
+    const name = document.createElement("span");
+    name.className = "shortcut-name";
+    name.textContent = COMMAND_LABELS[cmd.name] ?? cmd.description ?? cmd.name;
+
+    const key = document.createElement("kbd");
+    key.className = "shortcut-key";
+    if (cmd.shortcut) {
+      key.textContent = cmd.shortcut;
+    } else {
+      key.textContent = "Not set";
+      key.classList.add("shortcut-key--unset");
+    }
+
+    row.appendChild(name);
+    row.appendChild(key);
+    shortcutList.appendChild(row);
+  }
+}
+
+openShortcutsBtn.addEventListener("click", async () => {
+  if (isFirefox) {
+    shortcutHint.textContent =
+      'Open about:addons in a new tab, click the gear icon, then choose "Manage Extension Shortcuts".';
+    shortcutHint.hidden = false;
+    return;
+  }
+  try {
+    await api.tabs.create({ url: "chrome://extensions/shortcuts" });
+  } catch (err) {
+    console.error("Couldn't open shortcuts page", err);
+    shortcutHint.textContent = "Open chrome://extensions/shortcuts in a new tab to customize.";
+    shortcutHint.hidden = false;
+  }
+});
+
+window.addEventListener("focus", () => {
+  loadShortcuts();
+});
+
 load();
+loadShortcuts();
